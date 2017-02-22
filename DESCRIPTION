@@ -1,0 +1,18 @@
+Package: dataquiz
+Type: Package
+Title: Different quiz types about data (shinyEvents based)
+Version: 0.1
+Date: 2016-10-16
+Author: Sebastian Kranz
+Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
+Description: Different quiz types about data (shinyEvents based)
+License: GPL >= 2.0
+Depends:
+    shinyEvents,shinyEventsUI,markdown,whisker,
+    stringr,
+    stringtools,
+    dplyr,
+    dplyrExtras,
+    restorepoint,
+    rmdtools,
+    yaml
