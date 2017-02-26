@@ -15,4 +15,9 @@ Depends:
     dplyrExtras,
     restorepoint,
     rmdtools,
-    yaml
+    yaml,
+    ggplot2,
+    dbmisc,
+    RSQLite,
+    digest,
+    shinyEventsLogin

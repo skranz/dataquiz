@@ -1,3 +1,7 @@
+# A rankquiz asks a player to rank different
+# entities, e.g. countries or sectors
+# can be played against a computer
+
 example.rankquiz = function() {
   setwd("D:/libraries/rankquiz")
   restore.point.options(display.restore.point = TRUE)
@@ -10,15 +14,15 @@ example.rankquiz = function() {
   max.year = max(d$year)
   d = d %>% filter(year==max.year)
 
-  rq = make.rankquiz(d,key="type",value="MWh", question="Which power plant types produced most electricity in Germany in 2014?")
+  dq = make.rankquiz(d,key="type",value="MWh", question="Which power plant types produced most electricity in Germany in 2014?")
 
-  app = rankquizApp(rq)
+  app = rankquizApp(dq)
   viewApp(app)
 
   library(readr)
   dat = read_csv("sbs_de.csv",col_types = cols(Value="n"))
-  rq = make.eurostat.sbs.sector.rank.quiz(dat=dat)
-  game = rq.solo.game(rq, comp.prob= 0.35)
+  dq = make.eurostat.sbs.sector.rank.quiz(dat=dat)
+  game = rq.solo.game(dq, comp.prob= 0.35)
   app = rankquizApp(game=game)
   viewApp(app)
 }
@@ -59,13 +63,13 @@ make.rankquiz = function(dat, key, value, question="Find the top ranked items", 
       mutate(index=100* (value / first(value)))
   }
 
-  nlist(dat, choices,question, top.n, choice.n, key=key,value=value, info="info", keys=keys, ts.dat)
+  nlist(quiztype="rq", dat, choices,question, top.n, choice.n, key=key,value=value, info="info", keys=keys, ts.dat)
 
 }
 
-make.rq.ui = function(rq=game$rq, solved = first.non.null(game$solved,rep(0,rq$top.n)), chosen.keys=game$chosen.keys, choice.handler = game$choice.handler, points=game$points, prev.choices = game$prev.choices, finished=game$finished, game=app$game, app=getApp()) {
+make.rq.ui = function(dq=game$dq, solved = first.non.null(game$solved,rep(0,dq$top.n)), chosen.keys=game$chosen.keys, choice.handler = game$choice.handler, points=game$points, prev.choices = game$prev.choices, finished=game$finished, game=app$game, app=getApp()) {
   restore.point("make.rq.ui")
-  dat = rq$dat
+  dat = dq$dat
 
   info.col = NULL
   if ("info" %in% names(dat)) {
@@ -73,12 +77,12 @@ make.rq.ui = function(rq=game$rq, solved = first.non.null(game$solved,rep(0,rq$t
       info.col = "info"
   }
   rows = which(solved>0)
-  show.dat = dat[rows,c("rank",rq$key,rq$value,info.col, "points")]
-  show.dat[[rq$value]] = format(show.dat[[rq$value]],big.mark=" ")
+  show.dat = dat[rows,c("rank",dq$key,dq$value,info.col, "points")]
+  show.dat[[dq$value]] = format(show.dat[[dq$value]],big.mark=" ")
 
-  #show.dat[[rq$key]][solved == 0] = ""
-  #show.dat[[rq$value]][solved == 0] = ""
-  #show.dat[[rq$info]][solved == 0] = ""
+  #show.dat[[dq$key]][solved == 0] = ""
+  #show.dat[[dq$value]][solved == 0] = ""
+  #show.dat[[dq$info]][solved == 0] = ""
 
   bg.color = c("white","#ccccff","#ffcccc")[solved[rows]+1]
   names(bg.color)=names(solved[rows])
@@ -94,7 +98,7 @@ make.rq.ui = function(rq=game$rq, solved = first.non.null(game$solved,rep(0,rq$t
 
   tab = html.table(show.dat,bg.color = bg.color)
 
-  rem.choices = setdiff(rq$choices,chosen.keys)
+  rem.choices = setdiff(dq$choices,chosen.keys)
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
     smallButton(id=paste0("choiceBtn_",i),label = choice, class.add = "rankQuizChoiceBtn")
@@ -104,12 +108,12 @@ make.rq.ui = function(rq=game$rq, solved = first.non.null(game$solved,rep(0,rq$t
   if (finished) {
     buttons=NULL
 
-    if (!is.null(rq$ts.dat)) {
+    if (!is.null(dq$ts.dat)) {
       library(ggplot2)
       library(plotly)
 
-      #plot.abs = ggplot(data=rq$ts.dat,aes_string(x="year",y=rq$value,color="label")) + geom_line(size=1.2) + facet_wrap(~label) + guides(color=FALSE)
-      plot.index = ggplot(data=rq$ts.dat,aes_string(x="year",y="index",color="label")) + geom_line(size=1.2) + facet_wrap(~label) + guides(color=FALSE)
+      #plot.abs = ggplot(data=dq$ts.dat,aes_string(x="year",y=dq$value,color="label")) + geom_line(size=1.2) + facet_wrap(~label) + guides(color=FALSE)
+      plot.index = ggplot(data=dq$ts.dat,aes_string(x="year",y="index",color="label")) + geom_line(size=1.2) + facet_wrap(~label) + guides(color=FALSE)
 
     }
   }
@@ -118,26 +122,26 @@ make.rq.ui = function(rq=game$rq, solved = first.non.null(game$solved,rep(0,rq$t
 
     index = as.integer(str.right.of(id,"_"))
     if (!is.null(choice.handler))
-      choice.handler(choice = rem.choices[[index]], rq=rq)
+      choice.handler(choice = rem.choices[[index]], dq=dq)
   })
 
   if (!finished) {
     ui = tagList(
-      p(rq$question),
+      p(dq$question),
       p("Results:"),
       HTML(tab),
       p(paste0("Your points: ",points[1],", computer: ", points[2])),
-      if (!is.null(game$rq.fun)) smallButton("newGameBtn","New Quiz"),
+      if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
       p("Your choice:"),
       buttons
     )
   } else {
     ui = tagList(
-    p(rq$question),
+    p(dq$question),
     p("Results:"),
     HTML(tab),
     p(paste0("Your points: ",points[1],", computer: ", points[2])),
-    if (!is.null(game$rq.fun)) smallButton("newGameBtn","New Quiz"),
+    if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
     plotOutput("indexPlot"),
     plotOutput("absPlot")
     )
@@ -152,71 +156,45 @@ make.rq.ui = function(rq=game$rq, solved = first.non.null(game$solved,rep(0,rq$t
   ui
 }
 
-rankquizApp = function(rq=NULL, game=NULL, game.fun = rq.solo.game,rq.fun=NULL,rq.fun.args=list(...),...) {
-  restore.point("rankquizApp")
-  app = eventsApp()
-
-  if (is.null(game)) {
-    game = game.fun(rq=rq,rq.fun=rq.fun,rq.fun.args=rq.fun.args)
-  }
-  app$game.fun = game.fun
-  app$game = game
-  app$ui = bootstrapPage(
-    uiOutput("mainUI")
-  )
-  refresh.game.ui(app$game)
-  app
-}
-
-refresh.game.ui = function(game=app$game, app=getApp()) {
-  ui =  game$ui.fun(game=game)
-  setUI("mainUI",ui)
-
-}
-
-new.game.instance = function(game, game.fun=app$game.fun, app=getApp()) {
-  game.fun(rq.fun=game$rq.fun,comp.prob=game$comp.prob, rq.fun.args=game$rq.fun.args)
-}
-
-rq.solo.game = function(rq=NULL, comp.prob= 0.5, rq.fun=NULL, rq.fun.args=list(...),...) {
+rq.solo.game = function(dq=NULL, comp.prob= 0.5, quiz.fun=NULL, quiz.fun.args=list(...),...) {
   restore.point("rq.solo.game")
 
-  if (is.null(rq)) {
-    rq = do.call(rq.fun, rq.fun.args)
+  if (is.null(dq)) {
+    dq = do.call(quiz.fun, quiz.fun.args)
   }
 
-  game = as.environment(nlist(
-    rq,comp.prob, solved = rep(0,rq$top.n), chosen.keys=NULL, choice.handler = solo.choice.handler, ui.fun = make.rq.ui, points = c(0,0), prev.choices = NULL, finished=FALSE, rq.fun=rq.fun, rq.fun.args=rq.fun.args
+  game = as.environment(nlist(game.type="rq.solo.game", quiztype="rq",
+    dq,comp.prob, solved = rep(0,dq$top.n), chosen.keys=NULL, choice.handler = rq.solo.choice.handler, ui.fun = make.rq.ui, points = c(0,0), prev.choices = NULL, finished=FALSE, quiz.fun=quiz.fun, quiz.fun.args=quiz.fun.args
   ))
-  game$keys = rq$dat[[rq$key]][1:rq$choice.n]
-  names(game$solved) = game$keys[1:rq$top.n]
+  game$keys = dq$dat[[dq$key]][1:dq$choice.n]
+  names(game$solved) = game$keys[1:dq$top.n]
 
   game
 
 }
 
-solo.choice.handler = function(choice, rq, game=getGame(), ...) {
-  restore.point("solo.choice.handler")
+rq.solo.choice.handler = function(choice, dq, game=getGame(), ...) {
+  restore.point("rq.solo.choice.handler")
   cat("\nChoice pressed...")
   game$solved[[choice]] = 1
   game$chosen.keys = c(game$chosen.keys, choice)
 
-  comp.choice = solo.computer.move(game)
+  comp.choice = rq.solo.computer.move(game)
 
-  game$finished = (game$rq$choice.n -length(game$chosen.keys)<=1) | length(setdiff(game$rq$key,game$chosen.keys))==0
+  game$finished = (game$dq$choice.n -length(game$chosen.keys)<=1) | length(setdiff(game$dq$key,game$chosen.keys))==0
 
   game$prev.choices = c(choice, comp.choice)
 
   game$points = c(
-    sum(game$rq$dat$points[which(game$solved==1)]),
-    sum(game$rq$dat$points[which(game$solved==2)])
+    sum(game$dq$dat$points[which(game$solved==1)]),
+    sum(game$dq$dat$points[which(game$solved==2)])
   )
   ui =  game$ui.fun(game=game)
   setUI("mainUI",ui)
 }
 
-solo.computer.move = function(game) {
-  restore.point("solo.computer.move")
+rq.solo.computer.move = function(game) {
+  restore.point("rq.solo.computer.move")
 
 
   # the index of the choosen alternative
@@ -231,8 +209,4 @@ solo.computer.move = function(game) {
   game$solved[[choice]] = 2
   game$chosen.keys = c(game$chosen.keys, choice)
   return(choice)
-}
-
-getGame = function(app=getApp()) {
-  app$game
 }

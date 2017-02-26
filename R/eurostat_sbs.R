@@ -1,14 +1,14 @@
 example.eurostat_sbs = function() {
   #install.packages("eurostat")
 
-  options(eurostat_cache_dir="D:/libraries/rankquiz/cache/eurostat", euro_stat_update=FALSE)
+  options(eurostat_cache_dir="D:/libraries/dataquiz/cache/eurostat", euro_stat_update=FALSE)
   id = "sbs_na_sca_r2"
 
   dat = get.eurostat.data(id)
 
-  rq = make.eurostat.sbs.sector.rank.quiz(dat=dat, country="DE", sector.digits=1)
+  dq = make.eurostat.sbs.sector.rank.quiz(dat=dat, country="DE", sector.digits=1)
 
-  app = rankquizApp(rq)
+  app = dataquizApp(dq)
   viewApp(app)
 
 }
@@ -150,7 +150,7 @@ make.eurostat.sbs.sector.rank.quiz = function(dat, var=NULL, top.n=10, choice.n=
   }
 
 
-  rq = make.rankquiz(d,ts.dat = ts.dat,key="sector",value="value", question=paste0("Find sectors with ", if (decreasing) "highest" else "lowest"," '", var.label,"'."), top.n=top.n, choice.n=choice.n, decreasing=decreasing)
+  dq = make.rankquiz(d,ts.dat = ts.dat,key="sector",value="value", question=paste0("Find sectors with ", if (decreasing) "highest" else "lowest"," '", var.label,"'."), top.n=top.n, choice.n=choice.n, decreasing=decreasing)
 
-  rq
+  dq
 }
