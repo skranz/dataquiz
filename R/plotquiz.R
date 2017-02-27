@@ -30,7 +30,7 @@ example.plotquiz = function() {
   viewApp(app)
 }
 
-make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, donevar=NULL, question="Which time series is shown?", choice.n = NULL, keys = NULL, facet.scales = "fixed", gentype=gen$gentype, gen=NULL) {
+make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, donevar=NULL, question="Which time series is shown?", choice.n = NULL, keys = NULL, facet.scales = "fixed", gentype=gen$gentype, gen=NULL, plot.lib = c("ggplot2","plotly", "highcharter")[1]) {
   restore.point("make.plotquiz")
 
   if (is.null(keys)) {
@@ -40,6 +40,19 @@ make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, do
   if (is.null(choice.n)) choice.n = length(keys)
 
   dat = dat[dat[[keyvar]] %in% keys, ]
+
+  make.help = !is.null(dat[["help.link"]])
+  if (make.help) {
+    help.df = dat %>%
+      group_by_(keyvar) %>%
+      summarize(help.link = first(help.link))
+    help.links = help.df[["help.link"]]
+    names(help.links) = help.df[[keyvar]]
+    help.links = help.links[keys]
+
+  } else {
+    help.links = NULL
+  }
 
   key = sample(keys, 1)
 
@@ -52,24 +65,40 @@ make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, do
     format(x,big.mark = " ")
   }
 
-  if (length(facetvar)>0) {
-    aes = aes_string(x=timevar,y=valuevar, color=facetvar[1])
+
+  if (plot.lib == "ggplot2" || plot.lib=="plotly") {
+    if (length(facetvar)>0) {
+      aes = aes_string(x=timevar,y=valuevar, color=facetvar[1])
+    } else {
+      aes = aes_string(x=timevar,y=valuevar, color=keyvar)
+
+    }
+    plot = ggplot(data=key.dat, aes) + geom_line(size=1.2) + guides(color=FALSE) + scale_y_continuous(labels=format.fun)
+
+    if (!is.null(facetvar)) {
+      plot = plot + facet_wrap(facetvar, scales = first.non.null(facet.scales, "fixed"))
+    }
+
+    if (plot.lib == "plotly")
+      plot = plotly::ggplotly(plot)
+
+  } else if (plot.lib == "highcharter") {
+    restore.point("pq.quiz.make.highcharter")
+
+    library(highcharter)
+    plot = hchart(key.dat,"line",hcaes(x=year,y=value, color=cntry, group=cntry))
   } else {
-    aes = aes_string(x=timevar,y=valuevar, color=keyvar)
-
+    stop(paste0("plot.lib ", plot.lib, " not yet implemented,"))
   }
 
-  plot = ggplot(data=key.dat, aes) + geom_line(size=1.2) + guides(color=FALSE) + scale_y_continuous(labels=format.fun)
-
-  if (!is.null(facetvar)) {
-    plot = plot + facet_wrap(facetvar, scales = first.non.null(facet.scales, "fixed"))
-  }
   #plot
 
   # draw random choices
   choices = sample(c(key,sample(setdiff(keys,key),size = choice.n-1)))
 
-  dq = nlist(quiztype="pq",gentype=gentype, dat=dat, plot=plot, choices,question, choice.n, key=key,keys=keys,keyvar, valuevar, timevar, doneval=doneval)
+  help.links = help.links[choices]
+
+  dq = nlist(quiztype="pq",gentype=gentype, dat=dat, plot=plot, choices,question, choice.n, key=key,keys=keys,keyvar, valuevar, timevar, doneval=doneval, help.links=help.links, plot.lib=plot.lib)
 
   dq$dqhash = digest(dq)
   if (is.null(gen)) {
@@ -89,21 +118,32 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    smallButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn")
+    btn = smallButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn")
+    if (is.null(dq$help.links)) return(btn)
+
+    tags$table(tags$tr(
+      tags$td(
+        btn
+      ),
+      tags$td(
+        tags$a(href=dq$help.links[choice], target="_blank", "(?)")
+      )
+    ))
   })
 
-  plot.ui = NULL
   classEventHandler("quizChoiceBtn", event="click", fun=function(id,...) {
     restore.point("plotQuizChoiceClick")
     index = as.integer(str.right.of(id,"_"))
     if (!is.null(choice.handler))
       choice.handler(choice = rem.choices[[index]], dq=dq)
   })
+  plot.ui = xplotOutput("quizPlot", height="12em", plot.lib = dq$plot.lib)
+
 
   if (!finished) {
     ui = tagList(
       p(dq$question),
-      plotOutput("quizPlot", height="12em"),
+      plot.ui,
       p(msg),
       if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
       p("Your choice:"),
@@ -112,12 +152,12 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
   } else {
     ui = tagList(
     p(dq$question),
-    plotOutput("quizPlot", height="12em"),
+    plot.ui,
     p(msg),
     if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz")
     )
   }
-  setPlot(id="quizPlot",expr= dq$plot)
+  xsetPlot(id="quizPlot",expr= dq$plot)
   buttonHandler("newGameBtn",function(...) {
     app$game = new.game.instance(game)
     refresh.game.ui(game=app$game)

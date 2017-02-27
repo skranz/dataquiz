@@ -4,7 +4,7 @@ example.ameco.pq = function() {
   options(scipen=999)
 
 
-  gen = quiz.gen.ameco.pq(countries=c("DEU","GBR"), start.year=1990, do.scale = TRUE)
+  gen = quiz.gen.ameco.pq(countries=c("DEU","AUT"), start.year=1990, do.scale = TRUE)
   data = load.gen.data.ameco.pq(gen=gen)
 
   dq = make.quiz.ameco.pq(data, gen=gen)
@@ -14,7 +14,7 @@ example.ameco.pq = function() {
 }
 
 
-quiz.gen.ameco.pq = function(country="DE", compare.country = NULL, num.items=4, start.year=NULL, end.year = NULL, do.scale=TRUE, countries = c(country, compare.country)) {
+quiz.gen.ameco.pq = function(country="DE", compare.country = NULL, num.items=4, start.year=NULL, end.year = NULL, do.scale=TRUE, countries = c(country, compare.country), ignore.unit.types = if(length(countries)>1) "large") {
   list(
     gentype = "ameco.pq",
     quiztype = "pq",
@@ -23,7 +23,8 @@ quiz.gen.ameco.pq = function(country="DE", compare.country = NULL, num.items=4, 
     start.year = start.year,
     end.year = end.year,
     item = NULL,
-    num.items= num.items
+    num.items= num.items,
+    ignore.unit.types = ignore.unit.types
   )
 }
 
@@ -41,6 +42,10 @@ make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.
 
   d = filter(dat,cntry %in% gen$countries)
 
+  if (!is.null(gen$ignore.unit.types))
+    d = filter(d, !unit.type %in% gen$ignore.unit.types)
+
+
   if (length(gen$countries)>1)
     d = filter(d, !local.unit)
 
@@ -48,6 +53,8 @@ make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.
   temp = group_by(d, cntry) %>%
     summarize(country=first(country))
   countries = temp$country
+  names(countries) = temp$cntry
+  countries = countries[gen$countries]
 
   d = mutate(d,measure = paste0(title, ". Unit: ",unit,"."))
     #cat(paste0('"',unique(dat$title),'"', collapse=",\n"))
@@ -77,12 +84,21 @@ make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.
   facetvar = NULL
   if (length(gen$countries)>1) {
     facetvar = "cntry"
+    d$cntry = factor(d$cntry, levels = gen$countries)
   }
 
   restore.point("3u73u74rzhzdi")
 
   question = paste0("Which time series for ", paste0(countries, collapse=" and ")," does the plot show?")
+
+  d$help.link = paste0("http://ec.europa.eu/economy_finance/ameco/HelpHtml/", tolower(d$item_code),".html")
+
   dq = make.plotquiz(dat=d,keyvar = "measure", valuevar="value", timevar="year", facetvar=facetvar, question=question)
+
+  library(ggthemes)
+  dq$plot = dq$plot + ylab("") + xlab("")
+    #theme_igray() + scale_colour_tableau()
+
 
   dq
 }
@@ -690,9 +706,23 @@ add.ameco.unit.type = function(dat = ameco) {
 "Mrd ECU/EUR, Weighted mean of t/t-1 national growth rates (weights: t-1 current prices in ECU/EUR)",
 "Mrd ECU/EUR, Weighted mean of t/t-1 national growth rates (weights: t-1 current prices in PPS)",
 "Mrd PPS, Standard aggregation",
-"(Mrd PPS)",
-"(millions)"
+"(Mrd PPS)"
   )
+
+  mio.units = c(
+    "(millions)"
+  )
+
+  ignore.units = c(
+"(PPS: EU-15 = 100)",
+"(PPS: EU-28 = 100)",
+"Mrd PPS, Standard aggregation",
+"(Mrd PPS)"
+  )
+  rows = which(!dat$unit %in% ignore.units)
+  dat = dat[rows,]
+
+
 
   unit.type = ifelse(nchar(dat$unit)>200,"weird","no")
   unit.type[dat$unit %in% index.units] = "index"
@@ -700,12 +730,26 @@ add.ameco.unit.type = function(dat = ameco) {
   unit.type[dat$unit %in% percentage.units] = "percentage"
   unit.type[dat$unit %in% thousand.units] = "1000"
   unit.type[dat$unit %in% large.units] = "large"
+  unit.type[dat$unit %in% mio.units] = "mio"
 
   dat$unit.type = unit.type
+
+  # add per capita units
+  pc = filter(dat, unit.type == "large")
+
+  repl.fun = function(x){
+    x = gsub("Mrd ","",x,fixed = TRUE)
+    x
+  }
+  pc = mutate(pc,
+    value = 1000*value / pop_mio,
+    unit = repl.fun(unit),
+    title = paste0(title, " per capita"),
+    unit.type = "1000pc"
+  )
+  dat = rbind(dat,pc)
+
   dat
-
-
-
 }
 
 load.main.data.ameco.pq = function(data.dir=dataquiz.data.dir(), update=FALSE) {
@@ -719,11 +763,27 @@ load.main.data.ameco.pq = function(data.dir=dataquiz.data.dir(), update=FALSE) {
 
   library(ameco)
   dat = na.omit(ameco)
+
   items = get.ameco.items()
   dat = filter(dat, title %in% items)
 
+  my.fun = function(x) {
+    if (length(x)==0) return(NA)
+    x
+  }
+  dat = group_by(dat, year, cntry) %>%
+    mutate(
+      pop_mio = my.fun(value[title=="Total population"]) / 1000)
+
+  # item code:
+  # extract the value after the last .
+  regex = "[:alnum:]+$"
+  dat$item_code = str_match(dat$code, regex)
+
+
   dat = add.ameco.unit.type(dat)
   #cat(paste0('"',sort(unique(dat$title)),'"', collapse=",\n"))
+
 
 
 
