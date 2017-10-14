@@ -123,9 +123,7 @@ make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.
 
   dq = make.plotquiz(dat=d,keyvar = "measure", valuevar="value", timevar="year", facetvar=facetvar, question=question)
 
-  library(ggthemes)
   dq$plot = dq$plot + ylab("") + xlab("")
-    #theme_igray() + scale_colour_tableau()
 
 
   dq
