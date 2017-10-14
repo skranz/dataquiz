@@ -101,7 +101,7 @@ make.rq.ui = function(dq=game$dq, solved = first.non.null(game$solved,rep(0,dq$t
   rem.choices = setdiff(dq$choices,chosen.keys)
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "rankQuizChoiceBtn")
+    simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "rankQuizChoiceBtn",, style="white-space: normal;")
   })
 
   plot.ui = NULL

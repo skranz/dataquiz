@@ -118,7 +118,7 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn")
+    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn", style="white-space: normal;")
     if (is.null(dq$help.links)) return(btn)
 
     tags$table(tags$tr(
