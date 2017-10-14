@@ -118,7 +118,7 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    btn = smallButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn")
+    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn")
     if (is.null(dq$help.links)) return(btn)
 
     tags$table(tags$tr(
@@ -142,18 +142,19 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   if (!finished) {
     ui = tagList(
-      if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Question",style = "width=100%;"),
       p(dq$question),
       plot.ui,
       p(msg),
-      buttons
+      buttons,
+      if (!is.null(game$quiz.fun)) simpleButton("newGameBtn","New Question",style = "width=100%;")
+
     )
   } else {
     ui = tagList(
-    if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Question",style = "width=100%;"),
     p(dq$question),
     plot.ui,
     p(msg),
+    if (!is.null(game$quiz.fun)) simpleButton("newGameBtn","New Question",style = "width=100%;")
     )
   }
   xsetPlot(id="quizPlot",expr= dq$plot)

@@ -101,7 +101,7 @@ make.rq.ui = function(dq=game$dq, solved = first.non.null(game$solved,rep(0,dq$t
   rem.choices = setdiff(dq$choices,chosen.keys)
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    smallButton(id=paste0("choiceBtn_",i),label = choice, class.add = "rankQuizChoiceBtn")
+    simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "rankQuizChoiceBtn")
   })
 
   plot.ui = NULL
@@ -131,8 +131,8 @@ make.rq.ui = function(dq=game$dq, solved = first.non.null(game$solved,rep(0,dq$t
       p("Results:"),
       HTML(tab),
       p(paste0("Your points: ",points[1],", computer: ", points[2])),
-      if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
-      buttons
+      buttons,
+      if (!is.null(game$quiz.fun)) simpleButton("newGameBtn","New Quiz")
     )
   } else {
     ui = tagList(
@@ -140,7 +140,7 @@ make.rq.ui = function(dq=game$dq, solved = first.non.null(game$solved,rep(0,dq$t
     p("Results:"),
     HTML(tab),
     p(paste0("Your points: ",points[1],", computer: ", points[2])),
-    if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
+    if (!is.null(game$quiz.fun)) simpleButton("newGameBtn","New Quiz"),
     plotOutput("indexPlot"),
     plotOutput("absPlot")
     )
