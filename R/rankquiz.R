@@ -132,7 +132,6 @@ make.rq.ui = function(dq=game$dq, solved = first.non.null(game$solved,rep(0,dq$t
       HTML(tab),
       p(paste0("Your points: ",points[1],", computer: ", points[2])),
       if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
-      p("Your choice:"),
       buttons
     )
   } else {

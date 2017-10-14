@@ -73,7 +73,7 @@ make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, do
       aes = aes_string(x=timevar,y=valuevar, color=keyvar)
 
     }
-    plot = ggplot(data=key.dat, aes) + geom_line(size=1.2) + guides(color=FALSE) + scale_y_continuous(labels=format.fun)
+    plot = ggplot(data=key.dat, aes) + geom_line(size=1.2) + guides(color=FALSE) + scale_y_continuous(labels=format.fun) + theme_bw()
 
     if (!is.null(facetvar)) {
       plot = plot + facet_wrap(facetvar, scales = first.non.null(facet.scales, "fixed"))
@@ -142,19 +142,18 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   if (!finished) {
     ui = tagList(
+      if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Question",style = "width=100%;"),
       p(dq$question),
       plot.ui,
       p(msg),
-      if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz"),
-      p("Your choice:"),
       buttons
     )
   } else {
     ui = tagList(
+    if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Question",style = "width=100%;"),
     p(dq$question),
     plot.ui,
     p(msg),
-    if (!is.null(game$quiz.fun)) smallButton("newGameBtn","New Quiz")
     )
   }
   xsetPlot(id="quizPlot",expr= dq$plot)

@@ -42,7 +42,6 @@ dataquizQuickApp = function(dq=NULL, game=NULL, game.fun = NULL,quiz.fun=NULL,qu
 refresh.game.ui = function(game=app$game, app=getApp()) {
   ui =  game$ui.fun(game=game)
   setUI("mainUI",ui)
-
 }
 
 new.game.instance = function(game, game.fun=app$game.fun, app=getApp()) {

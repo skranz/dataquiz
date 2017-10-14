@@ -4,7 +4,7 @@ example.ameco.pq = function() {
   options(scipen=999)
 
 
-  gen = quiz.gen.ameco.pq(countries=c("DEU","AUT"), start.year=1990, do.scale = TRUE)
+  gen = quiz.gen.ameco.pq(countries=c("DEU","GBR"), start.year=1990, do.scale = TRUE)
   data = load.gen.data.ameco.pq(gen=gen)
 
   dq = make.quiz.ameco.pq(data, gen=gen)
@@ -15,6 +15,8 @@ example.ameco.pq = function() {
 
 
 quiz.gen.ameco.pq = function(country="DE", compare.country = NULL, num.items=4, start.year=NULL, end.year = NULL, do.scale=TRUE, countries = c(country, compare.country), ignore.unit.types = if(length(countries)>1) "large") {
+  restore.point("quiz.gen.ameco.pq")
+
   list(
     gentype = "ameco.pq",
     quiztype = "pq",
@@ -28,6 +30,32 @@ quiz.gen.ameco.pq = function(country="DE", compare.country = NULL, num.items=4, 
   )
 }
 
+make.quiz.ameco.gen.ui = function(country = "DEU", compare.country = "FRA", countries=c("EU28","EU15","EA19","EA12","DU15","DA12","BEL","BGR","CZE","DNK","DEU","D","EST","IRL","GRC","ESP","FRA","HRV","ITA","CYP","LVA","LTU","LUX","HUN","MLT","NLD","AUT","POL","PRT","ROM","SVN","SVK","FIN","SWE","GBR","MKD","ISL","TUR","MNE","SRB","ALB","NOR","CHE","USA","JPN","CAN","MEX","KOR","AUS","NZL","CU15","CA12","FU12","FA17","FA18","FA19","FU27","FU28","FA12","FU15")) {
+
+  restore.point("make.quiz.ameco.gen.ui")
+  ns = NS("ameco")
+  form.ids =c(ns("countrySelect"),ns("compareCountrySelect"),ns("scaleCheckbox"))
+  ui = tagList(
+    h3("Macroeconomic Time Series from the AMECO Database"),
+    selectInput(ns("countrySelect"),"Country", choices=countries, selected = country),
+    selectInput(ns("compareCountrySelect"),"Comparison Country", choices=countries, selected = compare.country),
+    checkboxInput(ns("scaleCheckbox"),"Scale comparison country",value = FALSE),
+    simpleButton(ns("startBtn"),"Start Quiz", form.ids = form.ids)
+  )
+
+  buttonHandler(ns("startBtn"), function(formValues,...) {
+    restore.point("amecoStartQuiz")
+
+    gen = quiz.gen.ameco.pq(countries=c(formValues[[ns("countrySelect")]], formValues[[ns("compareCountrySelect")]]), start.year=1990, do.scale = formValues[[ns("scaleCheckbox")]])
+    data = load.gen.data.ameco.pq(gen=gen)
+    dq = make.quiz.ameco.pq(data, gen=gen)
+
+    startDataQuiz(quiz.fun=make.quiz.ameco.pq, dat=data, gen=gen)
+
+  })
+
+  ui
+}
 
 make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.ameco.pq(),...) {
   restore.point("quiz.make.ameco.pq")
