@@ -28,6 +28,7 @@ dataquizApp = function(quiz.dir) {
 
 
   app$ui = fluidPage(
+    HTML("<style> body {background-color:#ddddff}</style>"),
     uiOutput("mainUI")
   )
   appInitHandler(function(...,session=app$session,app=getApp()) {

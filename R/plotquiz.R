@@ -73,7 +73,7 @@ make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, do
       aes = aes_string(x=timevar,y=valuevar, color=keyvar)
 
     }
-    plot = ggplot(data=key.dat, aes) + geom_line(size=1.2) + guides(color=FALSE) + scale_y_continuous(labels=format.fun) + theme_bw()
+    plot = ggplot(data=key.dat, aes) + geom_line(size=1.2) + guides(color=FALSE) + scale_y_continuous(labels=format.fun) + theme_bw() +  theme(plot.background = element_rect(fill='#ddddff'))
 
     if (!is.null(facetvar)) {
       plot = plot + facet_wrap(facetvar, scales = first.non.null(facet.scales, "fixed"))
@@ -118,7 +118,7 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn", style="white-space: normal; margin-bottom: 0.5em; background-color: #80ACFF;")
+    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn", style="white-space: normal; margin-bottom: 0.5em; background-color: #eeeeff;")
     if (is.null(dq$help.links)) return(btn)
 
     tags$table(tags$tr(
