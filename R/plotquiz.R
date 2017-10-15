@@ -199,7 +199,8 @@ pq.choice.handler = function(choice, dq, game=getGame(), ...) {
     game$msg = paste0("No, that is not the time series for ", choice, ". Try again.")
     game$finished=FALSE
   }
-  writeDataQuizLog("pq_answer",c(dq$dqhash, game$solved, paste0('"',choice,'"')))
+  choice.ind = match(choice, dq$keys)
+  writeDataQuizLog("pq_answer",c(dq$dqhash, game$solved, choice.ind))
 
   ui =  game$ui.fun(game=game)
   setUI("mainUI",ui)
