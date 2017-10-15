@@ -27,7 +27,10 @@ dataquizApp = function(quiz.dir) {
   lop = loginModule(container.id = "mainUI", need.userid =TRUE, need.password = FALSE, use.signup = FALSE, init.userid= random.nickname(), login.fun = dataquiz.login)
 
 
+  shiny::addResourcePath("dataquiz", system.file("www", package="dataquiz"))
   app$ui = fluidPage(
+    #tags$head(tags$script(src="dataquiz/jquery.swipe.min.js")),
+    #tags$head(tags$script(src="dataquiz/dataquiz.js")),
     HTML("<style> body {background-color:#ddddff}</style>"),
     uiOutput("mainUI")
   )
@@ -39,7 +42,11 @@ dataquizApp = function(quiz.dir) {
 
 dataquiz.login = function(userid,...) {
   restore.point("dataquiz.login")
-  ui = make.quiz.ameco.gen.ui()
+  ui = tagList(
+    make.quiz.ameco.gen.ui(),
+    hr(),
+    make.quiz.eurostat.gen.ui()
+  )
   setUI("mainUI",ui)
 }
 

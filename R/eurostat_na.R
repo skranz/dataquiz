@@ -4,6 +4,12 @@ example.eurostat_na = function() {
   set.dataquiz.options(quiz.dir)
   options(scipen=999)
 
+  co = unique(rbind(eu_countries, ea_countries, efta_countries, eu_candidate_countries) %>% arrange(code))
+
+  txt = paste0('"',co[,2],'" = "',co[,1], '"', collapse=", ")
+  writeClipboard(txt)
+
+
   gen = quiz.gen.eurostat.na(countries=c("DE","UK"), start.year=1990, do.scale = TRUE)
   data = load.gen.data.eurostat.na(gen=gen)
   unique(data$geo)
@@ -59,6 +65,34 @@ quiz.gen.eurostat.na = function(country="DE", compare.country = NULL, num.sector
     item = NULL,
     num.sectors= num.sectors
   )
+}
+
+
+make.quiz.eurostat.gen.ui = function(country = "DE", compare.country = "FR", countries=c("Albania" = "AL", "Austria" = "AT", "Belgium" = "BE", "Bulgaria" = "BG", "Switzerland" = "CH", "Cyprus" = "CY", "Czech Republic" = "CZ", "Germany" = "DE", "Denmark" = "DK", "Estonia" = "EE", "Greece" = "EL", "Spain" = "ES", "Finland" = "FI", "France" = "FR", "Croatia" = "HR", "Hungary" = "HU", "Ireland" = "IE", "Iceland" = "IS", "Italy" = "IT", "Liechtenstein" = "LI", "Lithuania" = "LT", "Luxembourg" = "LU", "Latvia" = "LV", "Montenegro" = "ME", "The former Yugoslav Republic of Macedonia" = "MK", "Malta" = "MT", "Netherlands" = "NL", "Norway" = "NO", "Poland" = "PL", "Portugal" = "PT", "Romania" = "RO", "Serbia" = "RS", "Sweden" = "SE", "Slovenia" = "SI", "Slovakia" = "SK", "Turkey" = "TR", "United Kingdom" = "UK"
+)) {
+
+  restore.point("make.quiz.eurostat.gen.ui")
+  ns = NS("eurostat")
+  form.ids =c(ns("countrySelect"),ns("compareCountrySelect"),ns("scaleCheckbox"))
+  ui = tagList(
+    h3("Sector Statistics Eurostat"),
+    selectInput(ns("countrySelect"),"Country", choices=countries, selected = country),
+    selectInput(ns("compareCountrySelect"),"Comparison Country", choices=countries, selected = compare.country),
+    checkboxInput(ns("scaleCheckbox"),"Scale comparison country",value = FALSE),
+    simpleButton(ns("startBtn"),"Start Quiz", form.ids = form.ids)
+  )
+
+  buttonHandler(ns("startBtn"), function(formValues,...) {
+    restore.point("eurostatStartQuiz")
+
+    gen = quiz.gen.eurostat.na(countries=c(formValues[[ns("countrySelect")]], formValues[[ns("compareCountrySelect")]]), start.year=1990, do.scale = formValues[[ns("scaleCheckbox")]])
+    data = load.gen.data.eurostat.na(gen=gen)
+    dq = make.quiz.eurostat.na(data, gen=gen)
+
+    startDataQuiz(quiz.fun=make.quiz.eurostat.na, dat=data, gen=gen)
+  })
+
+  ui
 }
 
 
