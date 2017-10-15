@@ -24,7 +24,7 @@ dataquizApp = function(quiz.dir) {
   db = dbConnect(SQLite(), dbname=file.path(app$db.dir,"quizdb.sqlite"))
   app$db = db = set.db.schemas(db, app$schemas)
 
-  lop = loginModule(container.id = "mainUI", need.userid =TRUE, need.password = FALSE, use.signup = FALSE, init.userid= random.nickname(), login.fun = dataquiz.login)
+  lop = loginModule(container.id = "mainUI", need.userid =FALSE, need.password = FALSE, use.signup = FALSE, init.userid="Guest", login.fun = dataquiz.login)
 
 
   shiny::addResourcePath("dataquiz", system.file("www", package="dataquiz"))
@@ -43,9 +43,15 @@ dataquizApp = function(quiz.dir) {
 dataquiz.login = function(userid,...) {
   restore.point("dataquiz.login")
   ui = tagList(
+    h3("Macroeconomic Data Quiz"),
+    p("Teaching and research in economics focuses on theoretical and econometric models. But why not from time to time just take a dive into the raw data? Perhaps you gets some insights by solving some quizzes..."),
     make.quiz.ameco.gen.ui(),
     hr(),
-    make.quiz.eurostat.gen.ui()
+    make.quiz.eurostat.gen.ui(),
+    hr(),
+    HTML("This website was created by <a href='https://www.uni-ulm.de/mawi/mawi-wiwi/institut/mitarbeiter/skranz/' target='_blank'>Sebastian Kranz</a> from <a href='http://www.uni-ulm.de/en/' target='_blank'>Ulm University</a>.
+
+The quizzes are based on the EU commission's <a href='https://ec.europa.eu/info/business-economy-euro/indicators-statistics/economic-databases/macro-economic-database-ameco_en' target='_blank'>AMECO database</a>, as well as, sector level data from <a href='http://ec.europa.eu/eurostat/data/database' target='_blank'>EUROSTAT</a>.")
   )
   setUI("mainUI",ui)
 }
