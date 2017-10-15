@@ -122,7 +122,7 @@ make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.
 
   d$help.link = paste0("http://ec.europa.eu/economy_finance/ameco/HelpHtml/", tolower(d$item_code),".html")
 
-  dq = make.plotquiz(dat=d,keyvar = "measure", valuevar="value", timevar="year", facetvar=facetvar, question=question)
+  dq = make.plotquiz(dat=d,keyvar = "measure", valuevar="value", timevar="year", facetvar=facetvar, question=question,gen=gen)
 
   dq$plot = dq$plot + ylab("") + xlab("")
 

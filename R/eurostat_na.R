@@ -96,7 +96,7 @@ make.quiz.eurostat.gen.ui = function(country = "DE", compare.country = "FR", cou
 }
 
 
-make.quiz.eurostat.na = function(dat=load.gen.data.eurostat.na(gen=gen), gen, done=NULL, weight.done = first.non.null(gen$weight.done,0.05)) {
+make.quiz.eurostat.na = function(dat=load.gen.data.eurostat.na(gen=gen), gen=NULL, done=NULL, weight.done = first.non.null(gen$weight.done,0.05)) {
 
   restore.point("make.quiz.eurostat.na")
 

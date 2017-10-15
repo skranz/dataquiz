@@ -34,8 +34,8 @@ insert.dq = function(db=app$db,dq, dq.dir = file.path(app$quiz.dir,"dq"), app=ge
     solution = first.non.null(dq[["key"]],""),
     created = Sys.time()
   )
-  dbInsert(db,"dq",values)
-  saveRDS(dq, file=file.path(dq.dir, dq$dqhash))
+  try(dbInsert(db,"dq",values,mode = "insert"))
+  #saveRDS(dq, file=file.path(dq.dir, dq$dqhash))
 }
 
 read.dq = function(dqhash, dq.dir = file.path(app$quiz.dir,"dq"), app=getApp()) {

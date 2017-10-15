@@ -95,6 +95,8 @@ startDataQuiz = function(dq=NULL, game=NULL, game.fun = NULL,quiz.fun=NULL,quiz.
 }
 
 save.dataquiz.app.dq = function(dq, app=getApp(), smaller=TRUE) {
+  restore.point("save.dataquiz.app.dq")
+
   if (is.null(app$quiz.dir)) return()
   dq.dir = file.path(app$quiz.dir,"dq")
   if (!dir.exists(dq.dir)) return()
@@ -102,9 +104,12 @@ save.dataquiz.app.dq = function(dq, app=getApp(), smaller=TRUE) {
   dq$plot = NULL
   dq$dat = NULL
 
-  sdq = dq[c("quiztype","gentype","choices","question","key","keys","keyvar","valuevar","timevar","dqhash","genhash")]
+  sdq = dq[c("quiztype","gentype","dqhash","question","keys")]
+  sdq$sol.ind = match(dq$key, dq$keys)
+  sdq$gen = dq$gen
 
-  saveRDS(sdq, file.path(dq.dir, paste0(dq$dqhash,".Rds")))
+  json = toJSON(sdq)
+  write(json, file.path(dq.dir,"dq.json"),append = TRUE)
 }
 
 writeDataQuizLog = function(log.type="login",values=NULL, do.log = isTRUE(app$do.log), log.dir = file.path(app$quiz.dir,"log"),  log.file = paste0(log.type,".txt"), cookieid = first.non.null(app$cookie$cookieid, "-"), app=getApp()) {

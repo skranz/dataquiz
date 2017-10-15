@@ -20,4 +20,5 @@ Depends:
     dbmisc,
     RSQLite,
     digest,
-    shinyEventsLogin
+    shinyEventsLogin,
+    jsonlite
