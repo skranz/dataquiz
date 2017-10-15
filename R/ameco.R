@@ -60,6 +60,7 @@ make.quiz.ameco.gen.ui = function(country = "DEU", compare.country = "FRA", coun
 make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.ameco.pq(),...) {
   restore.point("quiz.make.ameco.pq")
 
+
   dat = na.omit(dat)
   if (!is.null(gen$start.year))
     dat = filter(dat, year >= gen$start.year)
@@ -124,6 +125,8 @@ make.quiz.ameco.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.
   dq = make.plotquiz(dat=d,keyvar = "measure", valuevar="value", timevar="year", facetvar=facetvar, question=question)
 
   dq$plot = dq$plot + ylab("") + xlab("")
+
+  writeDataQuizLog("make_quiz",c("ameco_pq", dq$dqhash))
 
 
   dq

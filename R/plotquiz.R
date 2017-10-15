@@ -107,6 +107,8 @@ make.plotquiz = function(dat, keyvar, valuevar,timevar="year", facetvar=NULL, do
     dq$genhash = digest(gen)
   }
   dq$gen = gen
+  try(save.dataquiz.app.dq(dq))
+
   dq
 }
 
@@ -118,10 +120,13 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
 
   buttons = lapply(seq_along(rem.choices), function(i) {
     choice = rem.choices[[i]]
-    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn", style="white-space: normal; margin-bottom: 0.5em; background-color: #eeeeff;")
+    style="white-space: normal; margin-bottom: 0.5em; background-color: #eeeeff;"
+    if (is.null(dq$help.links))
+      style = paste0(style," width: 100%;")
+    btn = simpleButton(id=paste0("choiceBtn_",i),label = choice, class.add = "quizChoiceBtn",style=style)
     if (is.null(dq$help.links)) return(btn)
 
-    tags$table(tags$tr(
+    tags$table(tags$tr(style="width: 100%",
       tags$td(
         btn
       ),
@@ -193,8 +198,8 @@ pq.choice.handler = function(choice, dq, game=getGame(), ...) {
     #comp.choice = pq.solo.computer.move(game)
     game$msg = paste0("No, that is not the time series for ", choice, ". Try again.")
     game$finished=FALSE
-
   }
+  writeDataQuizLog("pq_answer",c(dq$dqhash, game$solved, paste0('"',choice,'"')))
 
   ui =  game$ui.fun(game=game)
   setUI("mainUI",ui)

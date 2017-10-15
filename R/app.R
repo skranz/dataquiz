@@ -6,13 +6,15 @@ examples.dataquizApp = function() {
 }
 
 
-dataquizApp = function(quiz.dir) {
+dataquizApp = function(quiz.dir, do.log=TRUE) {
   restore.point("dataquizApp")
   app = eventsApp()
 
+  app$do.log = TRUE
   app$quiz.dir = quiz.dir
   app$db.dir = file.path(quiz.dir, "db")
   app$dq.dir = file.path(quiz.dir, "dq")
+
 
   set.dataquiz.options(quiz.dir)
 
@@ -24,24 +26,31 @@ dataquizApp = function(quiz.dir) {
   db = dbConnect(SQLite(), dbname=file.path(app$db.dir,"quizdb.sqlite"))
   app$db = db = set.db.schemas(db, app$schemas)
 
-  lop = loginModule(container.id = "mainUI", need.userid =FALSE, need.password = FALSE, use.signup = FALSE, init.userid="Guest", login.fun = dataquiz.login)
+  lop = loginModule(container.id = "mainUI", need.userid =FALSE, need.password = FALSE, use.signup = FALSE, init.userid=random.string(), login.fun = dataquiz.login, cookie.name = "dataQuizUserCookie")
 
 
   shiny::addResourcePath("dataquiz", system.file("www", package="dataquiz"))
   app$ui = fluidPage(
     #tags$head(tags$script(src="dataquiz/jquery.swipe.min.js")),
     #tags$head(tags$script(src="dataquiz/dataquiz.js")),
+    cookiesHeader("dataquizUserCookie", eventId="dataquizLoadCookies"),
     HTML("<style> body {background-color:#ddddff}</style>"),
     uiOutput("mainUI")
   )
+  loadPageCookiesHandler(dataquiz.cookies.loaded, "dataquizLoadCookies")
+
   appInitHandler(function(...,session=app$session,app=getApp()) {
     initLoginDispatch(lop)
   })
   app
 }
 
-dataquiz.login = function(userid,...) {
+dataquiz.login = function(userid=NULL,..., app=getApp()) {
   restore.point("dataquiz.login")
+
+  app$userid = userid
+  writeDataQuizLog("login")
+
   ui = tagList(
     h3("Macroeconomic Data Quiz"),
     p("Teaching and research in economics focuses on theoretical and econometric models. But why not from time to time just take a dive into the raw data? Perhaps you gets some insights by solving some quizzes..."),
@@ -56,6 +65,15 @@ The quizzes are based on the EU commission's <a href='https://ec.europa.eu/info/
   setUI("mainUI",ui)
 }
 
+dataquiz.cookies.loaded = function(cookies, ..., app=getApp()) {
+  restore.point("dataquiz.cookies.loaded")
+  cookie = cookies[["dataquizUserCookie"]]
+  if (is.null(cookie)) {
+    cookie = list(cookieid = random.string())
+    setCookie("dataquizUserCookie", cookie, expires=360)
+  }
+  app$cookie = cookie
+}
 
 startDataQuiz = function(dq=NULL, game=NULL, game.fun = NULL,quiz.fun=NULL,quiz.fun.args=list(...),app=getApp(),...) {
   restore.point("startDataQuiz")
@@ -76,4 +94,21 @@ startDataQuiz = function(dq=NULL, game=NULL, game.fun = NULL,quiz.fun=NULL,quiz.
   app
 }
 
+save.dataquiz.app.dq = function(dq, app=getApp(), remove.plot=TRUE) {
+  if (is.null(app$quiz.dir)) return()
+  dq.dir = file.path(app$quiz.dir,"dq")
+  if (!dir.exists(dq.dir)) return()
+  if (remove.plot)
+    dq$plot = NULL
+  saveRDS(dq, file.path(dq.dir, paste0(dq$dqhash,".Rds")))
+}
 
+writeDataQuizLog = function(log.type="login",values=NULL, do.log = isTRUE(app$do.log), log.dir = file.path(app$quiz.dir,"log"),  log.file = paste0(log.type,".txt"), cookieid = first.non.null(app$cookie$cookieid, "-"), app=getApp()) {
+  restore.point("writeDataQuizLog")
+  if (!do.log) return()
+  if (!dir.exists(log.dir)) return()
+
+  values=c(as.character(Sys.time()),app$userid,cookieid, values)
+  txt = paste0(values, collapse=", ")
+  try(write(txt, file.path(log.dir, log.file), append=TRUE))
+}

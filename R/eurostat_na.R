@@ -169,6 +169,8 @@ make.quiz.eurostat.na = function(dat=load.gen.data.eurostat.na(gen=gen), gen, do
 
   dq = make.plotquiz(dat=d,keyvar = "sector", valuevar="value", timevar="year", donevar="donekey", facetvar=facetvar, question=question, choice.n=length(sectors), keys=sectors, gen=gen)
 
+  writeDataQuizLog("make_quiz",c("eurostat_na", dq$dqhash))
+
   dq
 }
 
