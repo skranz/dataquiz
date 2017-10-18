@@ -156,10 +156,11 @@ make.pq.ui = function(dq=game$dq,game=app$game,finished=first.non.null(game$fini
     )
   } else {
     ui = tagList(
-    p(dq$question),
-    plot.ui,
-    p(msg),
-    if (!is.null(game$quiz.fun)) simpleButton("newGameBtn","New Question",style = "width=100%;")
+      p(dq$question),
+      plot.ui,
+      p(msg),
+      if (!is.null(game$quiz.fun)) simpleButton("newGameBtn","New Question",style = "width=100%;"),
+      if (!is.null(dq$explain.fun)) dq$explain.fun(dq=dq)
     )
   }
   xsetPlot(id="quizPlot",expr= dq$plot)

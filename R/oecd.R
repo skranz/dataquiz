@@ -96,7 +96,24 @@ make.quiz.oecd.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.o
 
   d$help.link = NULL
 
+
+
   dq = make.plotquiz(dat=d,keyvar = "measure", valuevar="value", timevar="year", facetvar=facetvar, question=question,gen=gen)
+
+  dq$explain.fun = function(dq,data.dir=dataquiz.data.dir(), ...) {
+    restore.point("dq.explain.fun")
+    if (NROW(dq$dat)==0) return(NULL)
+    oecd.dir = file.path(data.dir,"oecd")
+    indicator = dq$dat$indicator[which(dq$dat$measure==dq$key)[1]]
+    file = file.path(data.dir,"oecd", paste0(indicator, "_descr.txt"))
+    if (!file.exists(file)) return(NULL)
+    descr = merge.lines(readLines(file,warn = FALSE))
+    tagList(
+      h4("Description"),
+      HTML(descr)
+    )
+
+  }
 
   dq$plot = dq$plot + ylab("") + xlab("")
 
@@ -171,9 +188,12 @@ combine.oecd.quiz.data = function(data.dir, oecd.dir = file.path(data.dir, "oecd
   restore.point("combine.oecd.quiz.data")
   files = list.files(oecd.dir, glob2rx("*.csv"),full.names = TRUE)
   li = lapply(files, function(file) {
-    readr::read_csv(file)
+    df = readr::read_csv(file)
+    df$TIME = as.integer(df$TIME)
+    df
   })
   df_raw = bind_rows(li)
+  df_raw = filter(df_raw,!is.na(TIME))
   saveRDS(df_raw, file.path(data.dir, "oecd_raw.rds"))
 
   df = adapt.oecd.quiz.data(df_raw)
