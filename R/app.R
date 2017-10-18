@@ -54,6 +54,8 @@ dataquiz.login = function(userid=NULL,..., app=getApp()) {
   ui = tagList(
     h3("Macroeconomic Data Quiz"),
     p("Teaching and research in economics focuses on theoretical and econometric models. But why not from time to time just take a dive into the raw data? Perhaps you gets some insights by solving some quizzes..."),
+    make.quiz.oecd.gen.ui(),
+    hr(),
     make.quiz.ameco.gen.ui(),
     hr(),
     make.quiz.eurostat.gen.ui(),

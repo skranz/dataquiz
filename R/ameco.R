@@ -34,6 +34,9 @@ make.quiz.ameco.gen.ui = function(country = "DEU", compare.country = "FRA", coun
 
   restore.point("make.quiz.ameco.gen.ui")
   ns = NS("ameco")
+  country_labels = country.code.to.name(countries)
+  names(countries) = country_labels
+
   form.ids =c(ns("countrySelect"),ns("compareCountrySelect"),ns("scaleCheckbox"))
   ui = tagList(
     h3("Macroeconomic Time Series from the AMECO Database"),
