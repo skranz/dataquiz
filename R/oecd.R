@@ -103,7 +103,7 @@ make.quiz.oecd.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.o
   dq$explain.fun = function(dq,data.dir=dataquiz.data.dir(), ...) {
     restore.point("dq.explain.fun")
     if (NROW(dq$dat)==0) return(NULL)
-    oecd.dir = file.path(data.dir,"oecd")
+
     indicator = dq$dat$indicator[which(dq$dat$measure==dq$key)[1]]
     file = file.path(data.dir,"oecd", paste0(indicator, "_descr.txt"))
     if (!file.exists(file)) return(NULL)
