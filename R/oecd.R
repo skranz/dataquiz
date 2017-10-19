@@ -188,7 +188,13 @@ combine.oecd.quiz.data = function(data.dir, oecd.dir = file.path(data.dir, "oecd
   restore.point("combine.oecd.quiz.data")
   files = list.files(oecd.dir, glob2rx("*.csv"),full.names = TRUE)
   li = lapply(files, function(file) {
-    df = readr::read_csv(file)
+    restore.point("jshfdf")
+    cat("\nParsing", file)
+    df = suppressWarnings(suppressMessages(try(readr::read_csv(file))))
+    if (is(df,"try-error")) {
+      cat("... failed!")
+      return(NULL)
+    }
     df$TIME = as.integer(df$TIME)
     df
   })
