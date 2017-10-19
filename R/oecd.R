@@ -105,7 +105,7 @@ make.quiz.oecd.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.o
     if (NROW(dq$dat)==0) return(NULL)
 
     indicator = dq$dat$indicator[which(dq$dat$measure==dq$key)[1]]
-    file = file.path(data.dir,"oecd", paste0(indicator, "_descr.txt"))
+    file = file.path(data.dir,"oecd_descr", paste0(indicator, "_descr.txt"))
     if (!file.exists(file)) return(NULL)
     descr = merge.lines(readLines(file,warn = FALSE))
     tagList(
@@ -202,6 +202,7 @@ combine.oecd.quiz.data = function(data.dir, oecd.dir = file.path(data.dir, "oecd
   df_raw = filter(df_raw,!is.na(TIME))
   saveRDS(df_raw, file.path(data.dir, "oecd_raw.rds"))
 
+  #df_raw = readRDS(file.path(data.dir, "oecd_raw.rds"))
   df = adapt.oecd.quiz.data(df_raw)
   saveRDS(df, file.path(data.dir, "oecd.rds"))
 
@@ -220,12 +221,22 @@ adapt.oecd.quiz.data = function(df = readRDS("oecd_raw.rds")) {
 }
 
 add.oecd.unit.type = function(df) {
+  restore.point("add.oecd.unit.type")
   df$unit.type = "other"
   rows = str.starts.with(df$unit,"PC")
   df$unit.type[rows] = "percentage"
 
-  rows = df$unit %in% c("MLN_USD","USD_CAP")
+  rows = str.starts.with(df$unit,"AGRWTH")
+  df$unit.type[rows] = "growthrate"
+
+
+  rows = df$unit %in% c("MLN_USD","MLN_EUR")
+  df$unit.type[rows] = "money"
+
+  rows = df$unit %in% c("USD_CAP","IDX2010")
   df$unit.type[rows] = df$unit[rows]
+
+  unique(df$unit.type)
   df
 
 }
