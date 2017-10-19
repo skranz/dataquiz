@@ -75,7 +75,7 @@ make.quiz.eurostat.gen.ui = function(country = "DE", compare.country = "FR", cou
   ns = NS("eurostat")
   form.ids =c(ns("countrySelect"),ns("compareCountrySelect"),ns("scaleCheckbox"))
   ui = tagList(
-    h3("Sector Statistics Eurostat"),
+    h3("Sector Statistics from Eurostat"),
     selectInput(ns("countrySelect"),"Country", choices=countries, selected = country),
     selectInput(ns("compareCountrySelect"),"Comparison Country", choices=countries, selected = compare.country),
     checkboxInput(ns("scaleCheckbox"),"Scale comparison country",value = FALSE),

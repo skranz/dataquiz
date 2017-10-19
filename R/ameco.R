@@ -39,7 +39,7 @@ make.quiz.ameco.gen.ui = function(country = "DEU", compare.country = "FRA", coun
 
   form.ids =c(ns("countrySelect"),ns("compareCountrySelect"),ns("scaleCheckbox"))
   ui = tagList(
-    h3("Macroeconomic Time Series from the AMECO Database"),
+    h3("Macroeconomic Time Series from the European Commission's AMECO Database"),
     selectInput(ns("countrySelect"),"Country", choices=countries, selected = country),
     selectInput(ns("compareCountrySelect"),"Comparison Country", choices=countries, selected = compare.country),
     checkboxInput(ns("scaleCheckbox"),"Scale comparison country",value = FALSE),

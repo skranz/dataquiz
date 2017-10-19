@@ -6,7 +6,7 @@ examples.dataquizApp = function() {
 }
 
 
-dataquizApp = function(quiz.dir, do.log=TRUE) {
+dataquizApp = function(quiz.dir, do.log=TRUE, show.oecd=TRUE, show.eurostat.na=TRUE, show.ameco=FALSE) {
   restore.point("dataquizApp")
   app = eventsApp()
 
@@ -14,6 +14,12 @@ dataquizApp = function(quiz.dir, do.log=TRUE) {
   app$quiz.dir = quiz.dir
   app$db.dir = file.path(quiz.dir, "db")
   app$dq.dir = file.path(quiz.dir, "dq")
+  app$show.oecd = show.oecd
+  app$show.eurostat.na = show.eurostat.na
+  app$show.ameco = show.ameco
+
+
+
 
 
   set.dataquiz.options(quiz.dir)
@@ -54,15 +60,25 @@ dataquiz.login = function(userid=NULL,..., app=getApp()) {
   ui = tagList(
     h3("Macroeconomic Data Quiz"),
     p("Teaching and research in economics focuses on theoretical and econometric models. But why not from time to time just take a dive into the raw data? Perhaps you gets some insights by solving some quizzes..."),
-    make.quiz.oecd.gen.ui(),
-    hr(),
-    make.quiz.ameco.gen.ui(),
-    hr(),
-    make.quiz.eurostat.gen.ui(),
-    hr(),
-    HTML("This website was created by <a href='https://www.uni-ulm.de/mawi/mawi-wiwi/institut/mitarbeiter/skranz/' target='_blank'>Sebastian Kranz</a> from <a href='http://www.uni-ulm.de/en/' target='_blank'>Ulm University</a>.
-
-The quizzes are based on the EU commission's <a href='https://ec.europa.eu/info/business-economy-euro/indicators-statistics/economic-databases/macro-economic-database-ameco_en' target='_blank'>AMECO database</a>, as well as, sector level data from <a href='http://ec.europa.eu/eurostat/data/database' target='_blank'>EUROSTAT</a>.")
+    if (app$show.oecd) {
+      tagList(
+        make.quiz.oecd.gen.ui(),
+        hr()
+      )
+    },
+    if (app$show.eurostat.na) {
+      tagList(
+        make.quiz.eurostat.gen.ui(),
+        hr()
+      )
+    },
+    if (app$show.ameco) {
+      tagList(
+        make.quiz.ameco.gen.ui(),
+        hr()
+      )
+    },
+    HTML("This website was created by <a href='https://www.uni-ulm.de/mawi/mawi-wiwi/institut/mitarbeiter/skranz/' target='_blank'>Sebastian Kranz</a> from <a href='http://www.uni-ulm.de/en/' target='_blank'>Ulm University</a>.")
   )
   setUI("mainUI",ui)
 }
