@@ -41,7 +41,7 @@ quiz.gen.oecd.pq = function(country="DE", compare.country = NULL, num.items=4, s
   )
 }
 
-make.quiz.oecd.pq = function(dat=load.gen.data.ameco.pq(gen=gen), gen=quiz.gen.oecd.pq(),...) {
+make.quiz.oecd.pq = function(dat=load.gen.data.oecd.pq(gen=gen), gen=quiz.gen.oecd.pq(),...) {
   restore.point("quiz.make.oecd.pq")
 
   dat = na.omit(dat)
@@ -172,6 +172,9 @@ load.gen.data.oecd.pq = function(gen, data.dir=dataquiz.data.dir()) {
     dat = readRDS("oecd.rds")
     dat = dat[dat$cntry %in% gen$countries,]
 
+    # remove na rows
+    dat = dat[!is.na(dat$value),]
+
     # save country data
     for (i in which(!exists)) {
       file = files[i]
@@ -180,9 +183,32 @@ load.gen.data.oecd.pq = function(gen, data.dir=dataquiz.data.dir()) {
       saveRDS(d, file)
     }
   }
+
+  dat = remove.na.oecd.gen.data(dat, gen)
+
+
   dat
 }
 
+remove.na.oecd.gen.data = function(dat, gen) {
+  if (length(gen$countries)==1)
+    return(dat)
+
+  dat$measure = paste0(dat$indicator,"_",dat$subject, "_", dat$unit)
+
+  cntry = gen$countries[1]
+  measures = unique(dat$measure[dat$cntry==cntry])
+
+  cntry = gen$countries[2]
+  measures2 = unique(dat$measure[dat$cntry==cntry])
+
+  remove = setdiff(union(measures, measures2),intersect(measures, measures2))
+
+  if (length(remove)>0) {
+    dat = dat[!dat$measure %in% remove,]
+  }
+  dat
+}
 
 combine.oecd.quiz.data = function(data.dir, oecd.dir = file.path(data.dir, "oecd")) {
   restore.point("combine.oecd.quiz.data")
